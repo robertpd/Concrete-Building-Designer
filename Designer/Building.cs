@@ -45,7 +45,7 @@ namespace Kawnkreet
                 }
                 else if (GridX >= 6)
                 {
-
+                    UniquePanels = 6;
                 }
             }
             else if (GridY > 3)
@@ -105,14 +105,11 @@ namespace Kawnkreet
             private double vStress;
             private double vMax;
 
-
-
             private double modFactor;
             private double fs;
 
             public void Design(InputData internalData)
             {
-                //n = 1.35 *(superdead+partition)+1.5*(imposed)
                 n = 1.35 * ( internalData.DeadLoad + internalData.PartitionLoad )+ 1.5 * internalData.ImpLoad;
                 f = n * internalData.Ly * internalData.Lx;
                 hDash = internalData.Ly * 1000 / 33;
@@ -154,7 +151,6 @@ namespace Kawnkreet
                     momentDirSlab[7] = mIntMid;
                     SlabMomList.Add(momentDirSlab);
 
-                    //CompressionCheck(momentDirSlab, mStrip, cStrip, internalData);
                     k = new double[8];
                     zod = new double[8];
                     z = new double[8];
@@ -165,12 +161,10 @@ namespace Kawnkreet
                             if (i == 2 || i == 5 || i == 7)
                             {
                                 k[i] = Math.Pow(10, 6) * Math.Abs(momentDirSlab[i]) / (mStrip * 1000 * (hDash * hDash) * internalData.Fck);
-                                //k[i] /= 1000; cant rem why...
                             }
                             else
                             {
                                 k[i] = Math.Pow(10, 6) * Math.Abs(momentDirSlab[i]) / (cStrip * 1000 * (hDash * hDash) * internalData.Fck);
-                                //k[i] /= 1000;
                             }
                             if (k[i] > 0.156)
                             {
@@ -194,25 +188,22 @@ namespace Kawnkreet
                     asReq = new double[8];
                     for (int i = 0; i < 8; i++)
                     {
-                        //if (momentDirSlab[i] != 0.0)
-                        //{
                         asReq[i] = momentDirSlab[i] == 0.0 ? 0.0 : Math.Pow(10, 6) * Math.Abs(momentDirSlab[i]) / (0.87 * fy * z[i]);
 
-                            if (i == 2 || i == 5 || i == 7)
+                        if (i == 2 || i == 5 || i == 7)
+                        {
+                            if (asReq[i] < minSteel[1])
                             {
-                                if (asReq[i] < minSteel[1])
-                                {
-                                    asReq[i] = minSteel[1];
-                                }
+                                asReq[i] = minSteel[1];
                             }
-                            else
+                        }
+                        else
+                        {
+                            if (asReq[i] < minSteel[0])
                             {
-                                if (asReq[i] < minSteel[0])
-                                {
-                                    asReq[i] = minSteel[0];
-                                }
+                                asReq[i] = minSteel[0];
                             }
-                        //}
+                        }
                     }
 
                     for (int i = 0; i < 8; i++)
@@ -227,7 +218,6 @@ namespace Kawnkreet
                                 {
                                     noBars[i] = (int)(asReq[i] / areaBars[x]) + addBar;
                                     areaBar[i] = areaBars[x];
-                                    //noBars[i] = Math.Abs(noBars[i]) != noBars[i] ? Math.Abs(noBars[i]) + 1 + addBar : noBars[i];
                                     asProv[i] = noBars[i] * areaBars[x];
                                     barSpacing[i] = 0.5 * mStrip * 1000 / noBars[i];
                                     barSpacing[i] = Math.Abs(barSpacing[i] / 25) * 25;
@@ -246,7 +236,6 @@ namespace Kawnkreet
                                         {
                                             if (x == 3)//at largest bar size, set back to standard h12
                                             {
-                                                //x = 2;      //set to 12mm bar
                                                 addBar++;       //maybe later add more detail to this to find trade off of steel area between h16/h14 ~~ area/spacing
                                             }
                                             else
@@ -267,7 +256,6 @@ namespace Kawnkreet
                                     {
                                         noBars[i] = (int)(asReq[i] / areaBars[x]) + addBar;
                                         areaBar[i] = areaBars[x];
-                                        //noBars[i] = Math.Abs(noBars[i]) != noBars[i] ? Math.Abs(noBars[i]) + 1 + addBar: noBars[i];
                                         asProv[i] = noBars[i] * areaBars[x];
                                         barSpacing[i] = 0.5 * cStrip * 1000 / noBars[i];
                                         barSpacing[i] = Math.Abs(barSpacing[i] / 25) * 25;
@@ -286,7 +274,6 @@ namespace Kawnkreet
                                             {
                                                 if (x == 0)//at smallest bar size, set back to standard h12
                                                 {
-                                                    //x = 2;      //set to 12mm bar
                                                     addBar--;       //reduce number of bars
                                                 }
                                                 else
@@ -306,7 +293,6 @@ namespace Kawnkreet
                                 {
                                     noBars[i] = (int)(asReq[i] / areaBars[x]) + addBar;
                                     areaBar[i] = areaBars[x];
-                                    //noBars[i] = Math.Abs(noBars[i]) != noBars[i] ? Math.Abs(noBars[i]) + 1 + addBar : noBars[i];
                                     asProv[i] = noBars[i] * areaBars[x];
                                     barSpacing[i] = 0.5 * cStrip * 1000 / noBars[i];
                                     barSpacing[i] = Math.Abs(barSpacing[i] / 25) * 25;
@@ -325,7 +311,6 @@ namespace Kawnkreet
                                         {
                                             if (x == 3)
                                             {
-                                                //x = 2;
                                                 addBar--;
                                             }
                                             else
@@ -344,7 +329,6 @@ namespace Kawnkreet
                                 {
                                     noBars[i] = (int)(asReq[i] / areaBars[x]) + addBar;
                                     areaBar[i] = areaBars[x];
-                                    //noBars[i] = Math.Abs(noBars[i]) != noBars[i] ? Math.Abs(noBars[i]) + 1 + addBar : noBars[i];
                                     asProv[i] = noBars[i] * areaBars[x];
                                     barSpacing[i] = 0.5 * cStrip * 1000 / noBars[i];
                                     barSpacing[i] = Math.Abs(barSpacing[i] / 25) * 25;
@@ -363,7 +347,6 @@ namespace Kawnkreet
                                         {
                                             if (x == 3)//at largest bar size, set back to standard h12
                                             {
-                                                //x = 2;
                                                 addBar--;
                                             }
                                             else
